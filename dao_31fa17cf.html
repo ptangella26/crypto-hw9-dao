@@ -1,0 +1,119 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+<head>
+    <title>DAO Information</title>
+    <meta charset="utf-8">
+    <link rel="icon" href="data:,">
+    <script src="web3.min.js"></script>
+    <style>
+        body { font-family: sans-serif; margin-top: 0; }
+        table, th, td { border: 1px solid #ccc; border-collapse: collapse; }
+        th, td { padding: 6px 10px; }
+    </style>
+</head>
+
+<body>
+    <h2>DAO Information</h2>
+    <p>The DAO purpose is: <span id="purpose">loading...</span></p>
+    <p>How to join the DAO: <span id="join">loading...</span></p>
+    <p>Total proposals: <span id="total_proposals">loading...</span></p>
+    <table id="dlist"></table>
+
+    <script>
+        const contractAddress = '0x38F5bBAbCCAf2e7C73745f10Fd6639F4D91cF8e7';
+        const web3 = new Web3('wss://andromeda.cs.virginia.edu/geth');
+        const abi = [{ "anonymous": false, "inputs": [{ "indexed": true, "internalType": "uint256", "name": "proposalID", "type": "uint256" }, { "indexed": true, "internalType": "address", "name": "recipient", "type": "address" }, { "indexed": true, "internalType": "uint256", "name": "amount", "type": "uint256" }, { "indexed": false, "internalType": "string", "name": "description", "type": "string" }], "name": "NewProposal", "type": "event" }, { "anonymous": false, "inputs": [{ "indexed": true, "internalType": "uint256", "name": "proposalID", "type": "uint256" }, { "indexed": true, "internalType": "bool", "name": "result", "type": "bool" }], "name": "ProposalClosed", "type": "event" }, { "anonymous": false, "inputs": [{ "indexed": true, "internalType": "uint256", "name": "proposalID", "type": "uint256" }, { "indexed": true, "internalType": "bool", "name": "position", "type": "bool" }, { "indexed": true, "internalType": "address", "name": "voter", "type": "address" }], "name": "Voted", "type": "event" }, { "inputs": [{ "internalType": "address", "name": "who", "type": "address" }], "name": "addMember", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [{ "internalType": "uint256", "name": "proposalID", "type": "uint256" }], "name": "closeProposal", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [], "name": "curator", "outputs": [{ "internalType": "address", "name": "", "type": "address" }], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "howToJoin", "outputs": [{ "internalType": "string", "name": "", "type": "string" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "who", "type": "address" }], "name": "isMember", "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "minProposalDebatePeriod", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "recipient", "type": "address" }, { "internalType": "uint256", "name": "amount", "type": "uint256" }, { "internalType": "string", "name": "description", "type": "string" }, { "internalType": "uint256", "name": "debatingPeriod", "type": "uint256" }], "name": "newProposal", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "payable", "type": "function" }, { "inputs": [], "name": "numberOfProposals", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "uint256", "name": "i", "type": "uint256" }], "name": "proposals", "outputs": [{ "internalType": "address", "name": "", "type": "address" }, { "internalType": "uint256", "name": "", "type": "uint256" }, { "internalType": "string", "name": "", "type": "string" }, { "internalType": "uint256", "name": "", "type": "uint256" }, { "internalType": "bool", "name": "", "type": "bool" }, { "internalType": "bool", "name": "", "type": "bool" }, { "internalType": "uint256", "name": "", "type": "uint256" }, { "internalType": "uint256", "name": "", "type": "uint256" }, { "internalType": "address", "name": "", "type": "address" }], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "purpose", "outputs": [{ "internalType": "string", "name": "", "type": "string" }], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "requestMembership", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [], "name": "reservedEther", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "bytes4", "name": "interfaceId", "type": "bytes4" }], "name": "supportsInterface", "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "tokens", "outputs": [{ "internalType": "address", "name": "", "type": "address" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "uint256", "name": "proposalID", "type": "uint256" }, { "internalType": "bool", "name": "supportsProposal", "type": "bool" }], "name": "vote", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "a", "type": "address" }, { "internalType": "uint256", "name": "pid", "type": "uint256" }], "name": "votedNo", "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "a", "type": "address" }, { "internalType": "uint256", "name": "pid", "type": "uint256" }], "name": "votedYes", "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }], "stateMutability": "view", "type": "function" }, { "stateMutability": "payable", "type": "receive" }];
+        const contract = new web3.eth.Contract(abi, contractAddress);
+
+        async function getDaoBasicInfo() {
+            const purpose = await contract.methods.purpose().call();
+            const howToJoin = await contract.methods.howToJoin().call();
+            return [purpose, howToJoin];
+        }
+
+        async function getNumProposals() {
+            return await contract.methods.numberOfProposals().call();
+        }
+
+        async function getProposal(i) {
+            return await contract.methods.proposals(i).call();
+        }
+
+        function copy_link(data) {
+            if ( data != "" )
+                return "&nbsp;<span class='copylink' onclick='navigator.clipboard.writeText(\"" + data + "\")'>&#x2398</span>";
+        }
+
+        function short_hash(hash) {
+            if ( hash == "" )
+                return "";
+            else
+                return hash.substr(0,4) + "..." + hash.substr(-2);
+        }
+
+        function format_number(num,decimals=2) {
+            if ( num > 0.0001 ) {
+                parts = num.toFixed(decimals).toString().split(".");
+                return parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',') + "." + parts[1];
+            } else
+                return num;
+        }
+
+        function convert_to_eth(wei) {
+            ethamt = parseInt(wei)/10**18;
+            return format_number(ethamt);
+        }
+
+        function format_date(seconds) {
+            return new Date(Number(seconds) * 1000).toLocaleString();
+        }
+
+        async function loadTable() {
+            try {
+                const [purpose, howToJoin] = await getDaoBasicInfo();
+                document.getElementById('purpose').innerHTML = purpose;
+                document.getElementById('join').innerHTML = howToJoin;
+
+                const n = parseInt(await getNumProposals(), 10);
+                document.getElementById('total_proposals').innerHTML = n;
+
+                let text = '<tr><th>ID</th><th>Recipient</th><th>Amount(ETH)</th><th>Description</th><th>Deadline</th><th>Open</th><th>Passed</th><th>Yea</th><th>Nay</th><th>Creator</th></tr>';
+                for (let i = 0; i < n; i++) {
+                    const p = await getProposal(i);
+                    text += '<tr>' +
+                        '<td>' + i + '</td>' +
+                        '<td>' + short_hash(p[0]) + "</a>" + copy_link(p[0]) + '</td>' +
+                        '<td>' + convert_to_eth(p[1]) + '</td>' +
+                        '<td>' + p[2] + '</td>' +
+                        '<td>' + format_date(p[3]) + '</td>' +
+                        '<td>' + p[4] + '</td>' +
+                        '<td>' + p[5] + '</td>' +
+                        '<td>' + p[6] + '</td>' +
+                        '<td>' + p[7] + '</td>' +
+                        '<td>' + short_hash(p[8]) + "</a>" + copy_link(p[8]) + '</td>' +
+                        '</tr>';
+                }
+                document.getElementById('dlist').innerHTML = text;
+            } catch (e) {
+                console.log('loadTable() failed:', e);
+            }
+        }
+
+        function subscribeToDaoEvents() {
+            const options = { address: contractAddress };
+            const sub = web3.eth.subscribe('logs', options, function (err, event) {
+                if (err) {
+                    console.log('event error:', err);
+                }
+            });
+            sub.on('data', event => loadTable());
+            sub.on('error', err => { throw err; });
+        }
+
+        loadTable();
+        subscribeToDaoEvents();
+    </script>
+</body>
+
+</html>
