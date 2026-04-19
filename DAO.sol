@@ -13,7 +13,7 @@ contract DAO is IDAO{
     mapping(uint => Proposal) public proposals;
     uint constant public minProposalDebatePeriod = 600;
     address public tokens;
-    INFTManager public nftManager;
+    INFTManager private nftManager;
     string public purpose; 
     string public howToJoin;
     address public curator;
@@ -26,10 +26,11 @@ contract DAO is IDAO{
         tokens = address(nftManager);
         curator = msg.sender;
         nftManager.mintWithURI(curator, generateURI(curator));
+        purpose = "To Decide whats the greatest sci-fi movie of all time.";
+        howToJoin = "Be a sci-fi movie enthusiast";
     }
 
     receive() external payable{
-        reservedEther += msg.value;
         return;
     }
 
@@ -61,6 +62,9 @@ contract DAO is IDAO{
     function vote(uint proposalID, bool supportsProposal) external {
         require(proposalID < numberOfProposals, "Invalid Proposal ID");
         require(checkMembership(msg.sender), "To vote you must be a member");
+        require(block.timestamp < proposals[proposalID].votingDeadline, "Voting Deadling has passed.");
+        require(votedYes[msg.sender][proposalID] == false && votedNo[msg.sender][proposalID] == false, "You have already voted for this proposal.");
+
         if (supportsProposal){
             votedYes[msg.sender][proposalID] = true;
             votedNo[msg.sender][proposalID] = false;
